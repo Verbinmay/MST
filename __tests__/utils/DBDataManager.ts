@@ -9,8 +9,8 @@ import { VideoType } from "../../src/types/videos/Video.type";
 const chance = new Chance();
 
 export const DBDataManager = {
+  /** videos */
   createVideos(quantity: number): void {
-    db.videos = [];
     for (let i = 0; i < quantity; i++) {
       const data: VideoType = {
         ...this.createUpdateVideoInput(),
@@ -20,7 +20,6 @@ export const DBDataManager = {
       db.videos.push(data);
     }
   },
-
   createCreateVideoInput(): CreateVideoInputModel {
     const data: CreateVideoInputModel = {
       title: chance.string({ length: 40 }),
@@ -38,7 +37,6 @@ export const DBDataManager = {
     }
     return data;
   },
-
   createUpdateVideoInput(): UpdateVideoInputModel {
     const data: UpdateVideoInputModel = { ...this.createCreateVideoInput() };
 
@@ -72,5 +70,17 @@ export const DBDataManager = {
       data.publicationDate = new Date().toISOString();
     }
     return data;
+  },
+  /** blogs */
+  createBlogs(quantity: number): void {
+    db.blogs = [];
+    for (let i = 0; i < quantity; i++) {
+      db.blogs.push({
+        id: chance.string({ length: 10 }),
+        name: chance.string({ length: 10 }),
+        description: chance.string({ length: 500 }),
+        websiteUrl: chance.url(),
+      });
+    }
   },
 };
