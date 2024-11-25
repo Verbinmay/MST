@@ -43,4 +43,27 @@ describe("/blogs", () => {
       expect(res.body[key]).toEqual(newData[key]);
     }
   });
+
+  it("shouldn't create", async () => {
+    setDB();
+    const newData: BlogInputModel = DBDataManager.createBlogInput();
+    newData.name = "";
+    newData.description = "";
+    newData.websiteUrl = "";
+
+    const res = await req
+      .post(SETTINGS.PATH.BLOGS)
+      .set("Content-Type", "application/json")
+      .send(newData);
+
+    if (res.status !== 201) {
+      console.log(res.body);
+    }
+
+    expect(res.status).toBe(400);
+    expect(res.body.errorsMessages.length).toBe(3);
+    expect(res.body.errorsMessages[0].field).toBe("name");
+    expect(res.body.errorsMessages[1].field).toBe("description");
+    expect(res.body.errorsMessages[2].field).toBe("websiteUrl");
+  });
 });
