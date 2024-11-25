@@ -1,9 +1,12 @@
+import { config } from "dotenv";
+
 import { db, setDB } from "../../src/db/db";
 import { SETTINGS } from "../../src/settings";
 import { BlogInputModel } from "../../src/types/blogs/BlogInputModel.type";
 import { req } from "../test-helpers";
 import { DBDataManager } from "../utils/DBDataManager";
 
+config();
 describe("/blogs", () => {
   beforeAll(async () => {
     setDB();
@@ -30,6 +33,7 @@ describe("/blogs", () => {
     const res = await req
       .post(SETTINGS.PATH.BLOGS)
       .set("Content-Type", "application/json")
+      .set("authorization", DBDataManager.createPassword())
       .send(newData);
 
     if (res.status !== 201) {
@@ -39,12 +43,11 @@ describe("/blogs", () => {
     expect(res.status).toBe(201);
 
     for (const key of Object.keys(newData) as (keyof BlogInputModel)[]) {
-      console.error(key);
       expect(res.body[key]).toEqual(newData[key]);
     }
   });
 
-  it("shouldn't create", async () => {
+  it("shouldn't create - 400", async () => {
     setDB();
     const newData: BlogInputModel = DBDataManager.createBlogInput();
     newData.name = "";
@@ -54,6 +57,7 @@ describe("/blogs", () => {
     const res = await req
       .post(SETTINGS.PATH.BLOGS)
       .set("Content-Type", "application/json")
+      .set("authorization", DBDataManager.createPassword())
       .send(newData);
 
     if (res.status !== 201) {
@@ -65,5 +69,21 @@ describe("/blogs", () => {
     expect(res.body.errorsMessages[0].field).toBe("name");
     expect(res.body.errorsMessages[1].field).toBe("description");
     expect(res.body.errorsMessages[2].field).toBe("websiteUrl");
+  });
+
+  it("shouldn't create - 401", async () => {
+    setDB();
+    const newData: BlogInputModel = DBDataManager.createBlogInput();
+
+    const res = await req
+      .post(SETTINGS.PATH.BLOGS)
+      .set("Content-Type", "application/json")
+      .send(newData);
+
+    if (res.status !== 401) {
+      console.log(res.body);
+    }
+
+    expect(res.status).toBe(401);
   });
 });
