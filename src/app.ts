@@ -2,6 +2,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import express from "express";
 
+import { blogsRouter } from "./routers/blogs-router";
 import { testingRouter } from "./routers/testing-router";
 import { videosRouter } from "./routers/videos-router";
 import { SETTINGS } from "./settings";
@@ -16,3 +17,4 @@ app.get("/", (req, res) => {
 
 app.use(SETTINGS.PATH.VIDEOS, videosRouter);
 app.use(SETTINGS.PATH.TESTING, testingRouter);
+app.use(SETTINGS.PATH.BLOGS, blogsRouter);
