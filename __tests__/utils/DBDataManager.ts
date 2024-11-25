@@ -86,8 +86,15 @@ export const DBDataManager = {
   createBlogInput(): BlogInputModel {
     return {
       name: chance.string({ length: 10 }),
-      description: chance.string({ length: 500 }),
-      websiteUrl: chance.url(),
+      description: chance.letter({ length: 499 }),
+      websiteUrl: `https://google.com`,
     };
+  },
+
+  createPassword(): string {
+    const login = process.env.BASIC_AUTH_LOGIN;
+    const password = process.env.BASIC_AUTH_PASSWORD;
+    const credentials = login + ":" + password;
+    return `Basic ${Buffer.from(credentials).toString("base64")}`;
   },
 };
