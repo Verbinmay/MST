@@ -1,7 +1,7 @@
 import { db, setDB } from "../../src/db/db";
 import { SETTINGS } from "../../src/settings";
-import { CreateVideoInputModel } from "../../src/types/video/CreateVideoInputModel.type";
-import { UpdateVideoInputModel } from "../../src/types/video/UpdateVideoInputModel.type";
+import { CreateVideoInputModel } from "../../src/types/videos/CreateVideoInputModel.type";
+import { UpdateVideoInputModel } from "../../src/types/videos/UpdateVideoInputModel.type";
 import { req } from "../test-helpers";
 import { DBDataManager } from "../utils/DBDataManager";
 
