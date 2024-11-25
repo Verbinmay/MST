@@ -1,6 +1,7 @@
 import Chance from "chance";
 
 import { db } from "../../src/db/db";
+import { BlogInputModel } from "../../src/types/blogs/BlogInputModel.type";
 import { CreateVideoInputModel } from "../../src/types/videos/CreateVideoInputModel.type";
 import { ResolutionsEnum } from "../../src/types/videos/Resolution.type";
 import { UpdateVideoInputModel } from "../../src/types/videos/UpdateVideoInputModel.type";
@@ -77,10 +78,16 @@ export const DBDataManager = {
     for (let i = 0; i < quantity; i++) {
       db.blogs.push({
         id: chance.string({ length: 10 }),
-        name: chance.string({ length: 10 }),
-        description: chance.string({ length: 500 }),
-        websiteUrl: chance.url(),
+        ...this.createBlogInput(),
       });
     }
+  },
+
+  createBlogInput(): BlogInputModel {
+    return {
+      name: chance.string({ length: 10 }),
+      description: chance.string({ length: 500 }),
+      websiteUrl: chance.url(),
+    };
   },
 };
