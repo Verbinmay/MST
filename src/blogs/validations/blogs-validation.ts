@@ -17,6 +17,5 @@ export const blogDescriptionValidation = body("description")
 export const blogWebsiteUrlValidation = body("websiteUrl")
   .trim()
   .notEmpty()
-  .escape()
   .isURL()
   .isLength({ max: 100 });
