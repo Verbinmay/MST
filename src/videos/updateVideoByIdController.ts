@@ -4,8 +4,8 @@ import { db } from "../db/db";
 import { errorPusher } from "../helpers/errorPusher";
 import { APIErrorResult } from "../types/errors/APIErrorResult.type";
 import { ParamType } from "../types/types";
-import { UpdateVideoInputModel } from "../types/video/UpdateVideoInputModel.type";
-import { VideoType } from "../types/video/Video.type";
+import { UpdateVideoInputModel } from "../types/videos/UpdateVideoInputModel.type";
+import { VideoType } from "../types/videos/Video.type";
 import { inputCreateVideoValidation } from "./createVideoController";
 
 const inputUpdateVideoValidation = (

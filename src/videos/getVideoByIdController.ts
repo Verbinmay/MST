@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 
 import { db } from "../db/db";
 import { ParamType } from "../types/types";
-import { VideoType } from "../types/video/Video.type";
+import { VideoType } from "../types/videos/Video.type";
 
 export const getVideoByIdController = (
   req: Request<ParamType>,

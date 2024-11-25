@@ -3,9 +3,9 @@ import { Request, Response } from "express";
 import { db } from "../db/db";
 import { errorPusher } from "../helpers/errorPusher";
 import { APIErrorResult } from "../types/errors/APIErrorResult.type";
-import { CreateVideoInputModel } from "../types/video/CreateVideoInputModel.type";
-import { ResolutionsEnum } from "../types/video/Resolution.type";
-import { VideoType } from "../types/video/Video.type";
+import { CreateVideoInputModel } from "../types/videos/CreateVideoInputModel.type";
+import { ResolutionsEnum } from "../types/videos/Resolution.type";
+import { VideoType } from "../types/videos/Video.type";
 
 export const inputCreateVideoValidation = (
   dto: CreateVideoInputModel

@@ -1,10 +1,10 @@
 import Chance from "chance";
 
 import { db } from "../../src/db/db";
-import { CreateVideoInputModel } from "../../src/types/video/CreateVideoInputModel.type";
-import { ResolutionsEnum } from "../../src/types/video/Resolution.type";
-import { UpdateVideoInputModel } from "../../src/types/video/UpdateVideoInputModel.type";
-import { VideoType } from "../../src/types/video/Video.type";
+import { CreateVideoInputModel } from "../../src/types/videos/CreateVideoInputModel.type";
+import { ResolutionsEnum } from "../../src/types/videos/Resolution.type";
+import { UpdateVideoInputModel } from "../../src/types/videos/UpdateVideoInputModel.type";
+import { VideoType } from "../../src/types/videos/Video.type";
 
 const chance = new Chance();
 
