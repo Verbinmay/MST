@@ -16,4 +16,8 @@ export const blogsRepository = {
     db.blogs.push(blog);
     return blog;
   },
+
+  findBlogById(id: string): BlogViewModel | null {
+    return db.blogs.find((blog) => blog.id === id) ?? null;
+  },
 };

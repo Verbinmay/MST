@@ -1,3 +1,4 @@
+import Chance from "chance";
 import { config } from "dotenv";
 
 import { db, setDB } from "../../src/db/db";
@@ -7,6 +8,8 @@ import { req } from "../test-helpers";
 import { DBDataManager } from "../utils/DBDataManager";
 
 config();
+const chance = new Chance();
+
 describe("/blogs", () => {
   beforeAll(async () => {
     setDB();
@@ -85,5 +88,21 @@ describe("/blogs", () => {
     }
 
     expect(res.status).toBe(401);
+  });
+
+  it("should get by id", async () => {
+    setDB();
+    DBDataManager.createBlogs(1);
+    const blog = db.blogs[0];
+    const res = await req
+      .get(SETTINGS.PATH.BLOGS.concat(`/${blog.id}`))
+      .expect(200);
+    expect(res.body).toEqual(blog);
+  });
+  it("shouldn't get by id", async () => {
+    setDB();
+    await req
+      .get(SETTINGS.PATH.BLOGS.concat(`/${chance.letter({ length: 10 })}`))
+      .expect(404);
   });
 });

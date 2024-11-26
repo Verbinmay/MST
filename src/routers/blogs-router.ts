@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  getBlogByIdController,
   getBlogsController,
   postBlogsController,
 } from "../blogs/blogs-controller";
@@ -24,3 +25,4 @@ blogsRouter.post(
   errorValidationMiddleware,
   postBlogsController
 );
+blogsRouter.get("/:id", getBlogByIdController);
