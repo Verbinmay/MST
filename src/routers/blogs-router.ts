@@ -3,6 +3,7 @@ import {
   getBlogByIdController,
   getBlogsController,
   postBlogsController,
+  putBlogByIdController,
 } from "../blogs/blogs-controller";
 import {
   blogDescriptionValidation,
@@ -26,3 +27,12 @@ blogsRouter.post(
   postBlogsController
 );
 blogsRouter.get("/:id", getBlogByIdController);
+blogsRouter.put(
+  "/:id",
+  basicAuthorizationMiddleware,
+  blogNameValidation,
+  blogDescriptionValidation,
+  blogWebsiteUrlValidation,
+  errorValidationMiddleware,
+  putBlogByIdController
+);

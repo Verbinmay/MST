@@ -105,4 +105,59 @@ describe("/blogs", () => {
       .get(SETTINGS.PATH.BLOGS.concat(`/${chance.letter({ length: 10 })}`))
       .expect(404);
   });
+
+  it("should update", async () => {
+    setDB();
+    DBDataManager.createBlogs(1);
+    const blog = db.blogs[0];
+    const newData: BlogInputModel = DBDataManager.createBlogInput();
+    const res = await req
+      .put(SETTINGS.PATH.BLOGS.concat(`/${blog.id}`))
+      .set("Content-Type", "application/json")
+      .set("authorization", DBDataManager.createPassword())
+      .send(newData);
+
+    expect(res.status).toBe(204);
+    expect(db.blogs[0]).toEqual({ ...newData, id: blog.id });
+  });
+  it("shouldn't update - 400", async () => {
+    setDB();
+    DBDataManager.createBlogs(1);
+    const blog = db.blogs[0];
+    const newData: BlogInputModel = DBDataManager.createBlogInput();
+    newData.name = "";
+    const res = await req
+      .put(SETTINGS.PATH.BLOGS.concat(`/${blog.id}`))
+      .set("Content-Type", "application/json")
+      .set("authorization", DBDataManager.createPassword())
+      .send(newData);
+
+    expect(res.status).toBe(400);
+    expect(res.body.errorsMessages.length).toBe(1);
+    expect(res.body.errorsMessages[0].field).toBe("name");
+  });
+  it("shouldn't update - 401", async () => {
+    setDB();
+    DBDataManager.createBlogs(1);
+    const blog = db.blogs[0];
+    const newData: BlogInputModel = DBDataManager.createBlogInput();
+    const res = await req
+      .put(SETTINGS.PATH.BLOGS.concat(`/${blog.id}`))
+      .set("Content-Type", "application/json")
+      .set("authorization", DBDataManager.createPassword().concat("122111"))
+      .send(newData);
+
+    expect(res.status).toBe(401);
+  });
+  it("shouldn't update - 404", async () => {
+    setDB();
+    const newData: BlogInputModel = DBDataManager.createBlogInput();
+    const res = await req
+      .put(SETTINGS.PATH.BLOGS.concat(`/${chance.letter({ length: 10 })}`))
+      .set("Content-Type", "application/json")
+      .set("authorization", DBDataManager.createPassword())
+      .send(newData);
+
+    expect(res.status).toBe(404);
+  });
 });

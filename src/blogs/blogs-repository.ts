@@ -20,4 +20,16 @@ export const blogsRepository = {
   findBlogById(id: string): BlogViewModel | null {
     return db.blogs.find((blog) => blog.id === id) ?? null;
   },
+
+  updateBlog(id: string, dto: BlogInputModel): BlogViewModel | null {
+    let updatedBlog = null;
+    db.blogs = db.blogs.map((blog) => {
+      if (blog.id === id) {
+        updatedBlog = { ...blog, ...dto };
+        return updatedBlog;
+      }
+      return blog;
+    });
+    return updatedBlog;
+  },
 };
