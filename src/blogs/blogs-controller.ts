@@ -27,3 +27,9 @@ export const putBlogByIdController = (req: Request, res: Response) => {
   const updatedBlog = blogsRepository.updateBlog(id, data as BlogViewModel);
   updatedBlog ? res.sendStatus(204) : res.sendStatus(404);
 };
+
+export const deleteBlogByIdController = (req: Request, res: Response) => {
+  const id = req.params.id;
+  const isDeleted = blogsRepository.deleteBlog(id);
+  isDeleted ? res.sendStatus(204) : res.sendStatus(404);
+}

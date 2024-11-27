@@ -32,4 +32,10 @@ export const blogsRepository = {
     });
     return updatedBlog;
   },
+
+  deleteBlog(id: string): boolean {
+    const initialLength = db.blogs.length;
+    db.blogs = db.blogs.filter((blog) => blog.id !== id);
+    return db.blogs.length < initialLength;
+  },
 };

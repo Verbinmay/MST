@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  deleteBlogByIdController,
   getBlogByIdController,
   getBlogsController,
   postBlogsController,
@@ -35,4 +36,9 @@ blogsRouter.put(
   blogWebsiteUrlValidation,
   errorValidationMiddleware,
   putBlogByIdController
+);
+blogsRouter.delete(
+  "/:id",
+  basicAuthorizationMiddleware,
+  deleteBlogByIdController
 );

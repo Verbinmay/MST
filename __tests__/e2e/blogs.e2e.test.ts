@@ -160,4 +160,36 @@ describe("/blogs", () => {
 
     expect(res.status).toBe(404);
   });
+
+  it("should delete", async () => {
+    setDB();
+    DBDataManager.createBlogs(1);
+    const blog = db.blogs[0];
+    const res = await req
+      .delete(SETTINGS.PATH.BLOGS.concat(`/${blog.id}`))
+      .set("authorization", DBDataManager.createPassword());
+
+    expect(res.status).toBe(204);
+    expect(db.blogs.length).toBe(0);
+  });
+
+  it("shouldn't delete - 401", async () => {
+    setDB();
+    DBDataManager.createBlogs(1);
+    const blog = db.blogs[0];
+    const res = await req
+      .delete(SETTINGS.PATH.BLOGS.concat(`/${blog.id}`))
+      .set("authorization", DBDataManager.createPassword().concat("122111"));
+
+    expect(res.status).toBe(401);
+  });
+
+  it("shouldn't delete - 404", async () => {
+    setDB();
+    const res = await req
+      .delete(SETTINGS.PATH.BLOGS.concat(`/${chance.letter({ length: 10 })}`))
+      .set("authorization", DBDataManager.createPassword());
+
+    expect(res.status).toBe(404);
+  });
 });
