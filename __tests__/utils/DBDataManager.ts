@@ -2,6 +2,9 @@ import Chance from "chance";
 
 import { db } from "../../src/db/db";
 import { BlogInputModel } from "../../src/types/blogs/BlogInputModel.type";
+import { BlogViewModel } from "../../src/types/blogs/BlogViewModel.type";
+import { PostInputModel } from "../../src/types/posts/PostInputModel.type";
+import { PostViewModel } from "../../src/types/posts/PostViewModel.type";
 import { CreateVideoInputModel } from "../../src/types/videos/CreateVideoInputModel.type";
 import { ResolutionsEnum } from "../../src/types/videos/Resolution.type";
 import { UpdateVideoInputModel } from "../../src/types/videos/UpdateVideoInputModel.type";
@@ -73,7 +76,7 @@ export const DBDataManager = {
     return data;
   },
   /** blogs */
-  createBlogs(quantity: number): void {
+  createBlogs(quantity: number): Array<BlogViewModel> {
     db.blogs = [];
     for (let i = 0; i < quantity; i++) {
       db.blogs.push({
@@ -81,6 +84,7 @@ export const DBDataManager = {
         ...this.createBlogInput(),
       });
     }
+    return db.blogs;
   },
 
   createBlogInput(): BlogInputModel {
@@ -96,5 +100,28 @@ export const DBDataManager = {
     const password = process.env.BASIC_AUTH_PASSWORD;
     const credentials = login + ":" + password;
     return `Basic ${Buffer.from(credentials).toString("base64")}`;
+  },
+
+  createPostInput(blogId?: string): PostInputModel {
+    return {
+      title: chance.letter({ length: 30 }),
+      content: chance.letter({ length: 800 }),
+      shortDescription: chance.letter({ length: 10 }),
+      blogId: blogId ?? this.createBlogs(1)[0].id,
+    };
+  },
+
+  createPosts(quantity: number, blogId?: string): Array<PostViewModel> {
+    db.posts = [];
+    for (let i = 0; i < quantity; i++) {
+      const postInput = this.createPostInput(blogId);
+      const blog = db.blogs.find((blog) => blog.id === postInput.blogId);
+      db.posts.push({
+        ...postInput,
+        id: chance.string({ length: 10 }),
+        blogName: blog?.name ?? "",
+      });
+    }
+    return db.posts;
   },
 };
