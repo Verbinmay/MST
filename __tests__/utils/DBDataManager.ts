@@ -81,6 +81,8 @@ export const DBDataManager = {
     for (let i = 0; i < quantity; i++) {
       db.blogs.push({
         id: chance.string({ length: 10 }),
+        createdAt: new Date().toISOString(),
+        isMembership: false,
         ...this.createBlogInput(),
       });
     }
@@ -119,6 +121,7 @@ export const DBDataManager = {
       db.posts.push({
         ...postInput,
         id: chance.string({ length: 10 }),
+        createdAt: new Date().toISOString(),
         blogName: blog?.name ?? "",
       });
     }

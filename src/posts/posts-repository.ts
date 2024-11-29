@@ -20,6 +20,7 @@ export const postsRepository = {
       ...dto,
       id: ` ${db.posts.length + 1}`,
       blogName: blog.name,
+      createdAt: new Date().toISOString(),
     };
     db.posts.push(post);
     return post;

@@ -12,6 +12,8 @@ export const blogsRepository = {
     const blog: BlogViewModel = {
       ...dto,
       id: ` ${db.blogs.length + 1}`,
+      createdAt: new Date().toISOString(),
+      isMembership: false,
     };
     db.blogs.push(blog);
     return blog;
