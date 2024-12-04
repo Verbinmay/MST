@@ -2,7 +2,6 @@ import Chance from "chance";
 import { config } from "dotenv";
 import { setTimeout } from "timers/promises";
 
-import { db, setDB } from "../../src/db/db";
 import { SETTINGS } from "../../src/settings";
 import { BlogInputModel } from "../../src/types/blogs/BlogInputModel.type";
 import { BlogViewModel } from "../../src/types/blogs/BlogViewModel.type";
@@ -13,13 +12,12 @@ config();
 const chance = new Chance();
 
 describe("/blogs", () => {
-  beforeAll(async () => {
-    setDB();
-  });
   beforeEach(async () => {
     await setTimeout(1000);
-    setDB();
-    await setTimeout(1000);
+    await DBDataManager.deleteAllDb();
+  });
+  afterAll(async () => {
+    await DBDataManager.closeConnection();
   });
 
   it("should get empty array", async () => {
@@ -28,10 +26,13 @@ describe("/blogs", () => {
   });
 
   it("should get not empty array", async () => {
-    DBDataManager.createBlogs(1);
+    const blogs: Array<BlogViewModel> = await DBDataManager.createBlogs(
+      1,
+      true
+    );
     const res = await req.get(SETTINGS.PATH.BLOGS).expect(200);
     expect(res.body.length).toBe(1);
-    expect(res.body[0]).toEqual(db.blogs[0]);
+    expect(res.body[0]).toEqual(blogs[0]);
   });
 
   it("should create", async () => {
@@ -81,7 +82,7 @@ describe("/blogs", () => {
       .set("authorization", DBDataManager.createPassword())
       .send(newData);
 
-    if (res.status !== 201) {
+    if (res.status !== 400) {
       console.log(res.body);
     }
 
@@ -108,13 +109,13 @@ describe("/blogs", () => {
   });
 
   it("should get by id", async () => {
-    DBDataManager.createBlogs(1);
-    const blog = db.blogs[0];
+    const blog = (await DBDataManager.createBlogs(1, true))[0] as BlogViewModel;
     const res = await req
       .get(SETTINGS.PATH.BLOGS.concat(`/${blog.id}`))
       .expect(200);
     expect(res.body).toEqual(blog);
   });
+
   it("shouldn't get by id", async () => {
     await req
       .get(SETTINGS.PATH.BLOGS.concat(`/${chance.letter({ length: 10 })}`))
@@ -122,8 +123,7 @@ describe("/blogs", () => {
   });
 
   it("should update", async () => {
-    DBDataManager.createBlogs(1);
-    const blog = db.blogs[0];
+    const blog = (await DBDataManager.createBlogs(1, true))[0] as BlogViewModel;
     const newData: BlogInputModel = DBDataManager.createBlogInput();
     const res = await req
       .put(SETTINGS.PATH.BLOGS.concat(`/${blog.id}`))
@@ -133,7 +133,13 @@ describe("/blogs", () => {
 
     expect(res.status).toBe(204);
 
-    const updatedBlog = db.blogs[0];
+    const updatedBlog: null | BlogViewModel = await DBDataManager.findBlogById(
+      blog.id,
+      true
+    );
+    if (!updatedBlog) {
+      throw new Error("Blog not found");
+    }
     for (const key of Object.keys(updatedBlog) as (keyof BlogViewModel)[]) {
       if (key === "id") {
         expect(updatedBlog[key]).toBe(blog[key]);
@@ -157,9 +163,9 @@ describe("/blogs", () => {
       throw new Error(`Unexpected key: ${key}`);
     }
   });
+
   it("shouldn't update - 400", async () => {
-    DBDataManager.createBlogs(1);
-    const blog = db.blogs[0];
+    const blog = (await DBDataManager.createBlogs(1, true))[0] as BlogViewModel;
     const newData: BlogInputModel = DBDataManager.createBlogInput();
     newData.name = "";
     const res = await req
@@ -173,8 +179,7 @@ describe("/blogs", () => {
     expect(res.body.errorsMessages[0].field).toBe("name");
   });
   it("shouldn't update - 401", async () => {
-    DBDataManager.createBlogs(1);
-    const blog = db.blogs[0];
+    const blog = (await DBDataManager.createBlogs(1, true))[0] as BlogViewModel;
     const newData: BlogInputModel = DBDataManager.createBlogInput();
     const res = await req
       .put(SETTINGS.PATH.BLOGS.concat(`/${blog.id}`))
@@ -196,19 +201,18 @@ describe("/blogs", () => {
   });
 
   it("should delete", async () => {
-    DBDataManager.createBlogs(1);
-    const blog = db.blogs[0];
+    const blog = (await DBDataManager.createBlogs(1, true))[0] as BlogViewModel;
     const res = await req
       .delete(SETTINGS.PATH.BLOGS.concat(`/${blog.id}`))
       .set("authorization", DBDataManager.createPassword());
 
+    const findBlog = await DBDataManager.findBlogById(blog.id);
     expect(res.status).toBe(204);
-    expect(db.blogs.length).toBe(0);
+    expect(findBlog).toBe(null);
   });
 
   it("shouldn't delete - 401", async () => {
-    DBDataManager.createBlogs(1);
-    const blog = db.blogs[0];
+    const blog = (await DBDataManager.createBlogs(1, true))[0] as BlogViewModel;
     const res = await req
       .delete(SETTINGS.PATH.BLOGS.concat(`/${blog.id}`))
       .set("authorization", DBDataManager.createPassword().concat("122111"));

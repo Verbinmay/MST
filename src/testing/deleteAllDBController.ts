@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 
-import { setDB } from "../db/db";
+import { blogsCollection, postsCollection } from "../db/db_mongo";
 
-export const deleteAllDBController = (req: Request, res: Response) => {
-  setDB();
+export const deleteAllDBController = async (req: Request, res: Response) => {
+  await blogsCollection.deleteMany({});
+  await postsCollection.deleteMany({});
   res.sendStatus(204);
 };

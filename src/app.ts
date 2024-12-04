@@ -5,7 +5,6 @@ import express from "express";
 import { blogsRouter } from "./routers/blogs-router";
 import { postsRouter } from "./routers/posts-router";
 import { testingRouter } from "./routers/testing-router";
-import { videosRouter } from "./routers/videos-router";
 import { SETTINGS } from "./settings";
 
 export const app = express();
@@ -16,7 +15,6 @@ app.get("/", (req, res) => {
   res.status(200).json({ version: "1.0" });
 });
 
-app.use(SETTINGS.PATH.VIDEOS, videosRouter);
 app.use(SETTINGS.PATH.TESTING, testingRouter);
 app.use(SETTINGS.PATH.BLOGS, blogsRouter);
 app.use(SETTINGS.PATH.POSTS, postsRouter);

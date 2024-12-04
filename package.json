@@ -6,15 +6,18 @@
   "scripts": {
     "watch": "tsc -w",
     "dev": "nodemon --inspect dist/index.js",
-    "jest": "jest -i",
+    "jest": "jest -i --detectOpenHandles",
     "jest:coverage": "jest -i --coverage"
   },
   "dependencies": {
+    "@types/lodash": "^4.17.13",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
-    "express-validator": "^7.2.0"
+    "express-validator": "^7.2.0",
+    "lodash": "^4.17.21",
+    "mongodb": "^6.11.0"
   },
   "devDependencies": {
     "@types/chance": "^1.1.6",

@@ -9,7 +9,6 @@ export const errorValidationMiddleware = (
   next: NextFunction
 ) => {
   const errors = validationResult(req);
-  console.log(req.body);
   if (!errors.isEmpty()) {
     const errorMessage: APIErrorResult = {
       errorsMessages: errors.array({ onlyFirstError: true }).map((error) => {

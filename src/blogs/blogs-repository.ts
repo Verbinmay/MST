@@ -1,43 +1,49 @@
-import { db } from "../db/db";
+import { randomUUID } from "crypto";
+import { InsertOneResult, ObjectId, WithId } from "mongodb";
+
+import { blogsCollection } from "../db/db_mongo";
 import { BlogInputModel } from "../types/blogs/BlogInputModel.type";
 import { BlogViewModel } from "../types/blogs/BlogViewModel.type";
 
 export const blogsRepository = {
-  findBlogs(): Array<BlogViewModel> {
-    const blogs: Array<BlogViewModel> = db.blogs;
-    return blogs;
+  async findBlogs(): Promise<WithId<BlogViewModel>[]> {
+    return await blogsCollection.find().toArray();
   },
 
-  createBlog(dto: BlogInputModel): BlogViewModel {
+  async createBlog(
+    dto: BlogInputModel
+  ): Promise<InsertOneResult<BlogViewModel>> {
     const blog: BlogViewModel = {
       ...dto,
-      id: ` ${db.blogs.length + 1}`,
+      id: randomUUID(),
       createdAt: new Date().toISOString(),
       isMembership: false,
     };
-    db.blogs.push(blog);
-    return blog;
+    return await blogsCollection.insertOne(blog);
   },
 
-  findBlogById(id: string): BlogViewModel | null {
-    return db.blogs.find((blog) => blog.id === id) ?? null;
+  async findBlogBy_Id(_id: ObjectId): Promise<WithId<BlogViewModel> | null> {
+    return await blogsCollection.findOne({ _id });
   },
 
-  updateBlog(id: string, dto: BlogInputModel): BlogViewModel | null {
-    let updatedBlog = null;
-    db.blogs = db.blogs.map((blog) => {
-      if (blog.id === id) {
-        updatedBlog = { ...blog, ...dto };
-        return updatedBlog;
+  async findBlogById(id: string): Promise<WithId<BlogViewModel> | null> {
+    return await blogsCollection.findOne({ id });
+  },
+
+  async updateBlog(id: string, dto: BlogInputModel): Promise<boolean> {
+    const result = await blogsCollection.updateOne(
+      { id },
+      {
+        $set: {
+          ...dto,
+        },
       }
-      return blog;
-    });
-    return updatedBlog;
+    );
+    return result.matchedCount > 0;
   },
 
-  deleteBlog(id: string): boolean {
-    const initialLength = db.blogs.length;
-    db.blogs = db.blogs.filter((blog) => blog.id !== id);
-    return db.blogs.length < initialLength;
+  async deleteBlog(id: string): Promise<boolean> {
+    const result = await blogsCollection.deleteOne({ id });
+    return result.deletedCount > 0;
   },
 };

@@ -1,9 +1,11 @@
 import Chance from "chance";
 import { config } from "dotenv";
+import { WithId } from "mongodb";
+import { setTimeout } from "timers/promises";
 
-import { db, setDB } from "../../src/db/db";
 import { SETTINGS } from "../../src/settings";
 import { PostInputModel } from "../../src/types/posts/PostInputModel.type";
+import { PostViewModel } from "../../src/types/posts/PostViewModel.type";
 import { req } from "../test-helpers";
 import { DBDataManager } from "../utils/DBDataManager";
 
@@ -11,27 +13,32 @@ config();
 const chance = new Chance();
 
 describe("/posts", () => {
-  beforeAll(async () => {
-    setDB();
+  beforeEach(async () => {
+    await setTimeout(1000);
+    await DBDataManager.deleteAllDb();
+  });
+  afterAll(async () => {
+    await DBDataManager.closeConnection();
   });
 
   it("should get empty array", async () => {
-    setDB();
     const res = await req.get(SETTINGS.PATH.POSTS).expect(200);
     expect(res.body.length).toBe(0);
   });
 
   it("should get not empty array", async () => {
-    setDB();
-    DBDataManager.createPosts(1);
+    const posts: Array<PostViewModel> = await DBDataManager.createPosts(
+      1,
+      undefined,
+      true
+    );
     const res = await req.get(SETTINGS.PATH.POSTS).expect(200);
     expect(res.body.length).toBe(1);
-    expect(res.body[0]).toEqual(db.posts[0]);
+    expect(res.body[0]).toEqual(posts[0]);
   });
 
   it("should create", async () => {
-    setDB();
-    const newData: PostInputModel = DBDataManager.createPostInput();
+    const newData: PostInputModel = await DBDataManager.createPostInput();
 
     const res = await req
       .post(SETTINGS.PATH.POSTS)
@@ -44,15 +51,39 @@ describe("/posts", () => {
     }
 
     expect(res.status).toBe(201);
+    for (const key of Object.keys(newData) as (keyof PostViewModel)[]) {
+      if (key === "id") {
+        expect(typeof res.body[key]).toBe("string");
+        continue;
+      }
+      if (key === "createdAt") {
+        expect(typeof res.body[key]).toBe("string");
+        continue;
+      }
+      if (key === "blogId") {
+        expect(typeof res.body[key]).toBe("string");
+        expect(await DBDataManager.findBlogById(res.body[key])).not.toBeNull();
+        continue;
+      }
 
-    for (const key of Object.keys(newData) as (keyof PostInputModel)[]) {
-      expect(res.body[key]).toEqual(newData[key]);
+      if (key === "title" || key === "shortDescription" || key === "content") {
+        expect(res.body[key]).toBe(newData[key]);
+        continue;
+      }
+
+      if (key === "blogName") {
+        expect(res.body[key]).toBe(
+          (await DBDataManager.findBlogById(newData.blogId))?.name
+        );
+        continue;
+      }
+
+      throw new Error(`Unexpected key: ${key}`);
     }
   });
 
   it("shouldn't create - 400", async () => {
-    setDB();
-    const newData: PostInputModel = DBDataManager.createPostInput();
+    const newData: PostInputModel = await DBDataManager.createPostInput();
     newData.title = "";
     newData.shortDescription = "";
     newData.content = "";
@@ -64,7 +95,7 @@ describe("/posts", () => {
       .set("authorization", DBDataManager.createPassword())
       .send(newData);
 
-    if (res.status !== 201) {
+    if (res.status !== 400) {
       console.log(res.body);
     }
 
@@ -77,8 +108,7 @@ describe("/posts", () => {
   });
 
   it("shouldn't create - 401", async () => {
-    setDB();
-    const newData: PostInputModel = DBDataManager.createPostInput();
+    const newData: PostInputModel = await DBDataManager.createPostInput();
 
     const res = await req
       .post(SETTINGS.PATH.POSTS)
@@ -93,24 +123,30 @@ describe("/posts", () => {
   });
 
   it("should get by id", async () => {
-    setDB();
-    const post = DBDataManager.createPosts(1)[0];
+    const post = (
+      await DBDataManager.createPosts(1, undefined, true)
+    )[0] as PostViewModel;
+
     const res = await req
       .get(SETTINGS.PATH.POSTS.concat(`/${post.id}`))
       .expect(200);
     expect(res.body).toEqual(post);
   });
+
   it("shouldn't get by id", async () => {
-    setDB();
     await req
       .get(SETTINGS.PATH.POSTS.concat(`/${chance.letter({ length: 10 })}`))
       .expect(404);
   });
 
   it("should update", async () => {
-    setDB();
-    const post = DBDataManager.createPosts(1)[0];
-    const newData: PostInputModel = DBDataManager.createPostInput(post.blogId);
+    const post = (
+      await DBDataManager.createPosts(1)
+    )[0] as WithId<PostViewModel>;
+    const newData: PostInputModel = await DBDataManager.createPostInput(
+      post.blogId
+    );
+
     const res = await req
       .put(SETTINGS.PATH.POSTS.concat(`/${post.id}`))
       .set("Content-Type", "application/json")
@@ -118,12 +154,54 @@ describe("/posts", () => {
       .send(newData);
 
     expect(res.status).toBe(204);
-    expect(db.posts[0]).toEqual({ ...post, ...newData });
+
+    const updatedPost: PostViewModel | null = await DBDataManager.findPostById(
+      post.id,
+      true
+    );
+
+    if (!updatedPost) {
+      throw new Error("Post not found");
+    }
+    for (const key of Object.keys(newData) as (keyof PostViewModel)[]) {
+      if (key === "id") {
+        expect(updatedPost[key]).toBe(post[key]);
+        continue;
+      }
+
+      if (key === "createdAt") {
+        expect(updatedPost[key]).toBe(post[key]);
+        continue;
+      }
+
+      if (key === "blogId") {
+        expect(updatedPost[key]).toBe(post[key]);
+        continue;
+      }
+
+      if (key === "title" || key === "shortDescription" || key === "content") {
+        expect(updatedPost[key]).toBe(newData[key]);
+        continue;
+      }
+
+      if (key === "blogName") {
+        expect(updatedPost[key]).toBe(
+          (await DBDataManager.findBlogById(newData.blogId))?.name
+        );
+        continue;
+      }
+
+      throw new Error(`Unexpected key: ${key}`);
+    }
   });
+
   it("shouldn't update - 400", async () => {
-    setDB();
-    const post = DBDataManager.createPosts(1)[0];
-    const newData: PostInputModel = DBDataManager.createPostInput(post.blogId);
+    const post = (
+      await DBDataManager.createPosts(1)
+    )[0] as WithId<PostViewModel>;
+    const newData: PostInputModel = await DBDataManager.createPostInput(
+      post.blogId
+    );
     newData.title = "";
     const res = await req
       .put(SETTINGS.PATH.POSTS.concat(`/${post.id}`))
@@ -136,9 +214,12 @@ describe("/posts", () => {
     expect(res.body.errorsMessages[0].field).toBe("title");
   });
   it("shouldn't update - 401", async () => {
-    setDB();
-    const post = DBDataManager.createPosts(1)[0];
-    const newData: PostInputModel = DBDataManager.createPostInput(post.blogId);
+    const post = (
+      await DBDataManager.createPosts(1)
+    )[0] as WithId<PostViewModel>;
+    const newData: PostInputModel = await DBDataManager.createPostInput(
+      post.blogId
+    );
     const res = await req
       .put(SETTINGS.PATH.POSTS.concat(`/${post.id}`))
       .set("Content-Type", "application/json")
@@ -148,8 +229,7 @@ describe("/posts", () => {
     expect(res.status).toBe(401);
   });
   it("shouldn't update - 404", async () => {
-    setDB();
-    const newData: PostInputModel = DBDataManager.createPostInput();
+    const newData: PostInputModel = await DBDataManager.createPostInput();
     const res = await req
       .put(SETTINGS.PATH.POSTS.concat(`/${chance.letter({ length: 10 })}`))
       .set("Content-Type", "application/json")
@@ -160,18 +240,22 @@ describe("/posts", () => {
   });
 
   it("should delete", async () => {
-    setDB();
-    const post = DBDataManager.createPosts(1)[0];
+    const post: PostViewModel = (
+      await DBDataManager.createPosts(1, undefined, true)
+    )[0] as PostViewModel;
     const res = await req
       .delete(SETTINGS.PATH.POSTS.concat(`/${post.id}`))
       .set("authorization", DBDataManager.createPassword());
+
+    const findPost = await DBDataManager.findPostById(post.id);
     expect(res.status).toBe(204);
-    expect(db.posts.length).toBe(0);
+    expect(findPost).toBe(null);
   });
 
   it("shouldn't delete - 401", async () => {
-    setDB();
-    const post = DBDataManager.createPosts(1)[0];
+    const post: PostViewModel = (
+      await DBDataManager.createPosts(1, undefined, true)
+    )[0] as PostViewModel;
     const res = await req
       .delete(SETTINGS.PATH.POSTS.concat(`/${post.id}`))
       .set("authorization", DBDataManager.createPassword().concat("122111"));
@@ -180,7 +264,6 @@ describe("/posts", () => {
   });
 
   it("shouldn't delete - 404", async () => {
-    setDB();
     const res = await req
       .delete(SETTINGS.PATH.POSTS.concat(`/${chance.letter({ length: 10 })}`))
       .set("authorization", DBDataManager.createPassword());

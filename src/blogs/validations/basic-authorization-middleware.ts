@@ -23,8 +23,8 @@ export const basicAuthorizationMiddleware = (
         }
       }
     }
-    res.send(401);
+    res.sendStatus(401);
   } catch (error) {
-    res.send(500);
+    res.sendStatus(500);
   }
 };

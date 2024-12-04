@@ -22,6 +22,6 @@ export const postContentValidation = body("content")
   .isString()
   .isLength({ max: 1000 });
 export const postBlogIdValidation = body("blogId").custom(async (value) => {
-  if (blogsRepository.findBlogById(value) === null)
+  if ((await blogsRepository.findBlogById(value)) === null)
     throw new Error("Blog not found");
 });

@@ -1,50 +1,57 @@
-import { db } from "../db/db";
+import { randomUUID } from "crypto";
+import { InsertOneResult, ObjectId, WithId } from "mongodb";
+
+import { blogsCollection, postsCollection } from "../db/db_mongo";
 import { BlogViewModel } from "../types/blogs/BlogViewModel.type";
 import { PostInputModel } from "../types/posts/PostInputModel.type";
 import { PostViewModel } from "../types/posts/PostViewModel.type";
 
 export const postsRepository = {
-  findPosts(): Array<PostViewModel> {
-    const posts: Array<PostViewModel> = db.posts;
+  async findPosts(): Promise<Array<WithId<PostViewModel>>> {
+    const posts: Array<WithId<PostViewModel>> = await postsCollection.find().toArray()
     return posts;
   },
 
-  createPost(dto: PostInputModel): PostViewModel {
-    const blog: BlogViewModel | undefined = db.blogs.find(
-      (blog) => blog.id === dto.blogId
-    );
+  async createPost(
+    dto: PostInputModel
+  ): Promise<InsertOneResult<PostViewModel>> {
+    const blog: BlogViewModel | null = await blogsCollection.findOne({
+      id: dto.blogId,
+    });
     if (!blog) {
       throw new Error("Blog not found");
     }
     const post: PostViewModel = {
       ...dto,
-      id: ` ${db.posts.length + 1}`,
+      id: randomUUID(),
       blogName: blog.name,
       createdAt: new Date().toISOString(),
     };
-    db.posts.push(post);
-    return post;
+    return await postsCollection.insertOne(post);
   },
 
-  findPostById(id: string): PostViewModel | null {
-    return db.posts.find((post) => post.id === id) ?? null;
+  async findPostBy_Id(_id: ObjectId): Promise<WithId<PostViewModel> | null> {
+    return await postsCollection.findOne({ _id });
   },
 
-  updatePost(id: string, dto: PostInputModel): PostViewModel | null {
-    let updatedPost = null;
-    db.posts = db.posts.map((post) => {
-      if (post.id === id) {
-        updatedPost = { ...post, ...dto };
-        return updatedPost;
+  async findPostById(id: string): Promise<WithId<PostViewModel> | null> {
+    return await postsCollection.findOne({ id });
+  },
+
+  async updatePost(id: string, dto: PostInputModel): Promise<boolean> {
+    const result = await postsCollection.updateOne(
+      { id },
+      {
+        $set: {
+          ...dto,
+        },
       }
-      return post;
-    });
-    return updatedPost;
+    );
+    return result.matchedCount > 0;
   },
 
-  deletePost(id: string): boolean {
-    const initialLength = db.posts.length;
-    db.posts = db.posts.filter((post) => post.id !== id);
-    return db.posts.length < initialLength;
+  async deletePost(id: string): Promise<boolean> {
+    const result = await postsCollection.deleteOne({ id });
+    return result.deletedCount > 0;
   },
 };
