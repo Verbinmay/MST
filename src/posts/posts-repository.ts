@@ -1,33 +1,19 @@
-import { randomUUID } from "crypto";
 import { InsertOneResult, ObjectId, WithId } from "mongodb";
 
-import { blogsCollection, postsCollection } from "../db/db_mongo";
-import { BlogViewModel } from "../types/blogs/BlogViewModel.type";
+import { postsCollection } from "../db/db_mongo";
 import { PostInputModel } from "../types/posts/PostInputModel.type";
 import { PostViewModel } from "../types/posts/PostViewModel.type";
 
 export const postsRepository = {
   async findPosts(): Promise<Array<WithId<PostViewModel>>> {
-    const posts: Array<WithId<PostViewModel>> = await postsCollection.find().toArray()
+    const posts: Array<WithId<PostViewModel>> = await postsCollection
+      .find()
+      .toArray();
     return posts;
   },
 
-  async createPost(
-    dto: PostInputModel
-  ): Promise<InsertOneResult<PostViewModel>> {
-    const blog: BlogViewModel | null = await blogsCollection.findOne({
-      id: dto.blogId,
-    });
-    if (!blog) {
-      throw new Error("Blog not found");
-    }
-    const post: PostViewModel = {
-      ...dto,
-      id: randomUUID(),
-      blogName: blog.name,
-      createdAt: new Date().toISOString(),
-    };
-    return await postsCollection.insertOne(post);
+  async createPost(dto: any): Promise<InsertOneResult<PostViewModel>> {
+    return await postsCollection.insertOne(dto);
   },
 
   async findPostBy_Id(_id: ObjectId): Promise<WithId<PostViewModel> | null> {
