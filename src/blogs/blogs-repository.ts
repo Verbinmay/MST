@@ -1,32 +1,28 @@
 import { randomUUID } from "crypto";
-import { InsertOneResult, ObjectId, WithId } from "mongodb";
+import { InsertOneResult, ObjectId } from "mongodb";
 
 import { blogsCollection } from "../db/db_mongo";
 import { BlogInputModel } from "../types/blogs/BlogInputModel.type";
 import { BlogViewModel } from "../types/blogs/BlogViewModel.type";
+import { BlogDBModel } from "../types/blogs/BlogDBModel.type";
 
 export const blogsRepository = {
-  async findBlogs(): Promise<WithId<BlogViewModel>[]> {
+  async findBlogs(): Promise<BlogDBModel[]> {
     return await blogsCollection.find().toArray();
   },
 
   async createBlog(
-    dto: BlogInputModel
-  ): Promise<InsertOneResult<BlogViewModel>> {
-    const blog: BlogViewModel = {
-      ...dto,
-      id: randomUUID(),
-      createdAt: new Date().toISOString(),
-      isMembership: false,
-    };
-    return await blogsCollection.insertOne(blog);
+    dto: any
+  ): Promise<InsertOneResult> {
+ 
+    return await blogsCollection.insertOne(dto);
   },
 
-  async findBlogBy_Id(_id: ObjectId): Promise<WithId<BlogViewModel> | null> {
+  async findBlogBy_Id(_id: ObjectId): Promise<BlogDBModel | null> {
     return await blogsCollection.findOne({ _id });
   },
 
-  async findBlogById(id: string): Promise<WithId<BlogViewModel> | null> {
+  async findBlogById(id: string): Promise<BlogDBModel | null> {
     return await blogsCollection.findOne({ id });
   },
 

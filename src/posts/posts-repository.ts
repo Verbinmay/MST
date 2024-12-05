@@ -1,26 +1,24 @@
-import { InsertOneResult, ObjectId, WithId } from "mongodb";
+import { InsertOneResult, ObjectId } from "mongodb";
 
 import { postsCollection } from "../db/db_mongo";
+import { PostDBModel } from "../types/posts/PostDBModel.type";
 import { PostInputModel } from "../types/posts/PostInputModel.type";
-import { PostViewModel } from "../types/posts/PostViewModel.type";
 
 export const postsRepository = {
-  async findPosts(): Promise<Array<WithId<PostViewModel>>> {
-    const posts: Array<WithId<PostViewModel>> = await postsCollection
-      .find()
-      .toArray();
+  async findPosts(): Promise<Array<PostDBModel>> {
+    const posts: Array<PostDBModel> = await postsCollection.find().toArray();
     return posts;
   },
 
-  async createPost(dto: any): Promise<InsertOneResult<PostViewModel>> {
+  async createPost(dto: any): Promise<InsertOneResult> {
     return await postsCollection.insertOne(dto);
   },
 
-  async findPostBy_Id(_id: ObjectId): Promise<WithId<PostViewModel> | null> {
+  async findPostBy_Id(_id: ObjectId): Promise<PostDBModel | null> {
     return await postsCollection.findOne({ _id });
   },
 
-  async findPostById(id: string): Promise<WithId<PostViewModel> | null> {
+  async findPostById(id: string): Promise<PostDBModel | null> {
     return await postsCollection.findOne({ id });
   },
 

@@ -1,5 +1,5 @@
 import Chance from "chance";
-import { InsertOneResult, WithId } from "mongodb";
+import { InsertOneResult } from "mongodb";
 import {
   blogsCollection,
   client,
@@ -13,6 +13,8 @@ import { BlogInputModel } from "../../src/types/blogs/BlogInputModel.type";
 import { BlogViewModel } from "../../src/types/blogs/BlogViewModel.type";
 import { PostInputModel } from "../../src/types/posts/PostInputModel.type";
 import { PostViewModel } from "../../src/types/posts/PostViewModel.type";
+import { BlogDBModel } from "../../src/types/blogs/BlogDBModel.type";
+import { PostDBModel } from "../../src/types/posts/PostDBModel.type";
 
 const chance = new Chance();
 
@@ -29,15 +31,16 @@ export const DBDataManager = {
   async createBlogs(
     quantity: number,
     viewModel: boolean = false
-  ): Promise<WithId<BlogViewModel>[] | Array<BlogViewModel>> {
-    const blogs: Array<WithId<BlogViewModel>> = [];
+  ): Promise<BlogDBModel[] | Array<BlogViewModel>> {
+    const blogs: Array<BlogDBModel> = [];
     for (let i = 0; i < quantity; i++) {
-      const blog: InsertOneResult<BlogViewModel> =
+      const blog: InsertOneResult =
         await blogsRepository.createBlog(
           this.createBlogInput() as BlogViewModel
         );
-      const findBlog: WithId<BlogViewModel> | null =
-        await blogsRepository.findBlogBy_Id(blog.insertedId);
+      const findBlog: BlogDBModel | null = await blogsRepository.findBlogBy_Id(
+        blog.insertedId
+      );
       if (findBlog) {
         blogs.push(findBlog);
       }
@@ -57,7 +60,7 @@ export const DBDataManager = {
   async findBlogById(
     id: string,
     viewModel: boolean = false
-  ): Promise<WithId<BlogViewModel> | null | BlogViewModel> {
+  ): Promise<BlogDBModel | null | BlogViewModel> {
     const blog = await blogsRepository.findBlogById(id);
 
     if (!blog) {
@@ -93,14 +96,15 @@ export const DBDataManager = {
     quantity: number,
     blogId?: string,
     viewModel: boolean = false
-  ): Promise<Array<PostViewModel | WithId<PostViewModel>>> {
-    const posts: Array<WithId<PostViewModel>> = [];
+  ): Promise<Array<PostViewModel | PostDBModel>> {
+    const posts: Array<PostDBModel> = [];
     for (let i = 0; i < quantity; i++) {
       const postInput: PostInputModel = await this.createPostInput(blogId);
-      const post: InsertOneResult<PostViewModel> =
+      const post: InsertOneResult =
         await postsRepository.createPost(postInput);
-      const findPost: WithId<PostViewModel> | null =
-        await postsRepository.findPostBy_Id(post.insertedId);
+      const findPost: PostDBModel | null = await postsRepository.findPostBy_Id(
+        post.insertedId
+      );
       if (findPost !== null) {
         posts.push(findPost);
       }
@@ -113,7 +117,7 @@ export const DBDataManager = {
   async findPostById(
     id: string,
     viewModel: boolean = false
-  ): Promise<WithId<PostViewModel> | null | PostViewModel> {
+  ): Promise<PostDBModel | null | PostViewModel> {
     const post = await postsRepository.findPostById(id);
 
     if (!post) {

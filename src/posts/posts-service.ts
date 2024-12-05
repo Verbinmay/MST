@@ -1,16 +1,17 @@
 import { randomUUID } from "crypto";
-import { InsertOneResult, WithId } from "mongodb";
+import { InsertOneResult } from "mongodb";
 
 import { blogsRepository } from "../blogs/blogs-repository";
-import { BlogViewModel } from "../types/blogs/BlogViewModel.type";
+import { BlogDBModel } from "../types/blogs/BlogDBModel.type";
+import { PostDBModel } from "../types/posts/PostDBModel.type";
 import { PostInputModel } from "../types/posts/PostInputModel.type";
-import { PostViewModel } from "../types/posts/PostViewModel.type";
 import { postsRepository } from "./posts-repository";
 
 export const postsService = {
-  async createPost(dto: PostInputModel): Promise<WithId<PostViewModel> | null> {
-    const blog: WithId<BlogViewModel> | null =
-      await blogsRepository.findBlogById(dto.blogId);
+  async createPost(dto: PostInputModel): Promise<PostDBModel | null> {
+    const blog: BlogDBModel | null = await blogsRepository.findBlogById(
+      dto.blogId
+    );
 
     if (!blog) {
       throw new Error("Blog not found");
@@ -23,11 +24,11 @@ export const postsService = {
       createdAt: new Date().toISOString(),
     };
 
-    const post: InsertOneResult<PostViewModel> =
-      await postsRepository.createPost(postDto);
+    const post: InsertOneResult = await postsRepository.createPost(postDto);
 
-    const createdPost: WithId<PostViewModel> | null =
-      await postsRepository.findPostBy_Id(post.insertedId);
+    const createdPost: PostDBModel | null = await postsRepository.findPostBy_Id(
+      post.insertedId
+    );
     return createdPost;
   },
 

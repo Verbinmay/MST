@@ -1,9 +1,9 @@
 import Chance from "chance";
 import { config } from "dotenv";
-import { WithId } from "mongodb";
 import { setTimeout } from "timers/promises";
 
 import { SETTINGS } from "../../src/settings";
+import { PostDBModel } from "../../src/types/posts/PostDBModel.type";
 import { PostInputModel } from "../../src/types/posts/PostInputModel.type";
 import { PostViewModel } from "../../src/types/posts/PostViewModel.type";
 import { req } from "../test-helpers";
@@ -140,9 +140,7 @@ describe("/posts", () => {
   });
 
   it("should update", async () => {
-    const post = (
-      await DBDataManager.createPosts(1)
-    )[0] as WithId<PostViewModel>;
+    const post = (await DBDataManager.createPosts(1))[0] as PostDBModel;
     const newData: PostInputModel = await DBDataManager.createPostInput(
       post.blogId
     );
@@ -196,9 +194,7 @@ describe("/posts", () => {
   });
 
   it("shouldn't update - 400", async () => {
-    const post = (
-      await DBDataManager.createPosts(1)
-    )[0] as WithId<PostViewModel>;
+    const post = (await DBDataManager.createPosts(1))[0] as PostDBModel;
     const newData: PostInputModel = await DBDataManager.createPostInput(
       post.blogId
     );
@@ -214,9 +210,7 @@ describe("/posts", () => {
     expect(res.body.errorsMessages[0].field).toBe("title");
   });
   it("shouldn't update - 401", async () => {
-    const post = (
-      await DBDataManager.createPosts(1)
-    )[0] as WithId<PostViewModel>;
+    const post = (await DBDataManager.createPosts(1))[0] as PostDBModel;
     const newData: PostInputModel = await DBDataManager.createPostInput(
       post.blogId
     );
