@@ -20,19 +20,44 @@ describe("/blogs", () => {
     await DBDataManager.closeConnection();
   });
 
-  it("should get empty array", async () => {
-    const res = await req.get(SETTINGS.PATH.BLOGS).expect(200);
-    expect(res.body.length).toBe(0);
+  it("should get empty with pagination", async () => {
+    const res = await req
+      .get(SETTINGS.PATH.BLOGS)
+      .query({
+        searchNameTerm: null,
+        sortBy: "createdAt",
+        sortDirection: "desc",
+        pageNumber: 1,
+        pageSize: 10,
+      })
+      .expect(200);
+    expect(res.body.pagesCount).toBe(0);
+    expect(res.body.page).toBe(1);
+    expect(res.body.pageSize).toBe(10);
+    expect(res.body.totalCount).toBe(0);
+    expect(res.body.items.length).toBe(0);
   });
 
-  it("should get not empty array", async () => {
+  it("should get not empty array with pagination", async () => {
     const blogs: Array<BlogViewModel> = await DBDataManager.createBlogs(
       1,
       true
     );
-    const res = await req.get(SETTINGS.PATH.BLOGS).expect(200);
-    expect(res.body.length).toBe(1);
-    expect(res.body[0]).toEqual(blogs[0]);
+    const res = await req
+      .get(SETTINGS.PATH.BLOGS)
+      .query({
+        searchNameTerm: `${blogs[0].name.slice(1, 3).toUpperCase()}`,
+        sortBy: "createdAt",
+        sortDirection: "desc",
+        pageNumber: 1,
+        pageSize: 10,
+      })
+      .expect(200);
+    expect(res.body.pagesCount).toBe(1);
+    expect(res.body.page).toBe(1);
+    expect(res.body.pageSize).toBe(10);
+    expect(res.body.totalCount).toBe(1);
+    expect(res.body.items.length).toBe(1);
   });
 
   it("should create", async () => {

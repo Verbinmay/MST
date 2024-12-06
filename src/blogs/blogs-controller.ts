@@ -2,11 +2,14 @@ import { Request, Response } from "express";
 import { matchedData } from "express-validator";
 
 import { BlogInputModel } from "../types/blogs/BlogInputModel.type";
+import { BlogPaginationModel } from "../types/blogs/BlogPaginationModel.type";
 import { BlogViewModel } from "../types/blogs/BlogViewModel.type";
+import { PaginationInputModel } from "../types/PaginationInputModel.type";
 import { blogsMapper } from "./blogs-mapper";
 
 export const getBlogsController = async (req: Request, res: Response) => {
-  const blogs: Array<BlogViewModel> = await blogsMapper.findBlogs();
+  const pagData: PaginationInputModel = req.body._pagination;
+  const blogs: BlogPaginationModel = await blogsMapper.findBlogs(pagData);
   res.status(200).send(blogs);
 };
 

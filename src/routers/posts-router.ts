@@ -13,8 +13,8 @@ import {
   postTitleValidation,
 } from "../posts/validations/posts-validation";
 
-import { basicAuthorizationMiddleware } from "../blogs/validations/basic-authorization-middleware";
-import { errorValidationMiddleware } from "../blogs/validations/error-validation-middleware";
+import { basicAuthorizationMiddleware } from "../validation/basic-authorization-middleware";
+import { errorValidationMiddleware } from "../validation/error-validation-middleware";
 
 export const postsRouter = Router();
 

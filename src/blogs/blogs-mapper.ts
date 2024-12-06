@@ -1,17 +1,29 @@
 import { viewModelCreator } from "../helpers/viewModelCreator";
 import { BlogDBModel } from "../types/blogs/BlogDBModel.type";
 import { BlogInputModel } from "../types/blogs/BlogInputModel.type";
+import { BlogPaginationModel } from "../types/blogs/BlogPaginationModel.type";
 import { BlogViewModel } from "../types/blogs/BlogViewModel.type";
+import { PaginationInputModel } from "../types/PaginationInputModel.type";
 import { blogsQueryRepository } from "./blogs-query-repository";
 import { blogsService } from "./blogs-service";
 
 export const blogsMapper = {
-  async findBlogs(): Promise<Array<BlogViewModel>> {
-    const blogs: Array<BlogDBModel> = await blogsQueryRepository.findBlogs();
-    const mappedBlogsToViewModel: Array<BlogViewModel> = blogs.map((blog) =>
-      viewModelCreator.blogViewModal(blog)
-    );
-    return mappedBlogsToViewModel;
+  async findBlogs(pagData: PaginationInputModel): Promise<BlogPaginationModel> {
+    const blogsInfo: {
+      totalCount: number;
+      blogs: BlogDBModel[];
+    } = await blogsQueryRepository.findBlogs(pagData);
+
+    const blogsWithPagination: BlogPaginationModel = {
+      pagesCount: Math.ceil(blogsInfo.totalCount / pagData.pageSize),
+      page: pagData.pageNumber,
+      pageSize: pagData.pageSize,
+      totalCount: blogsInfo.totalCount,
+      items: blogsInfo.blogs.map((blog) =>
+        viewModelCreator.blogViewModal(blog)
+      ),
+    };
+    return blogsWithPagination;
   },
 
   async createBlog(dto: BlogInputModel): Promise<BlogViewModel | null> {

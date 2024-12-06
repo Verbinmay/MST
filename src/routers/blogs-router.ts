@@ -12,12 +12,13 @@ import {
   blogWebsiteUrlValidation,
 } from "../blogs/validations/blogs-validation";
 
-import { basicAuthorizationMiddleware } from "../blogs/validations/basic-authorization-middleware";
-import { errorValidationMiddleware } from "../blogs/validations/error-validation-middleware";
+import { basicAuthorizationMiddleware } from "../validation/basic-authorization-middleware";
+import { errorValidationMiddleware } from "../validation/error-validation-middleware";
+import { inputPaginationMiddleware } from "../validation/input-pagination-middleware";
 
 export const blogsRouter = Router();
 
-blogsRouter.get("/", getBlogsController);
+blogsRouter.get("/", inputPaginationMiddleware, getBlogsController);
 blogsRouter.post(
   "/",
   basicAuthorizationMiddleware,
