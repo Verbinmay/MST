@@ -5,6 +5,7 @@ import { setTimeout } from "timers/promises";
 import { SETTINGS } from "../../src/settings";
 import { BlogInputModel } from "../../src/types/blogs/BlogInputModel.type";
 import { BlogViewModel } from "../../src/types/blogs/BlogViewModel.type";
+import { PostViewModel } from "../../src/types/posts/PostViewModel.type";
 import { req } from "../test-helpers";
 import { DBDataManager } from "../utils/DBDataManager";
 
@@ -58,6 +59,59 @@ describe("/blogs", () => {
     expect(res.body.pageSize).toBe(10);
     expect(res.body.totalCount).toBe(1);
     expect(res.body.items.length).toBe(1);
+  });
+
+  it("should create post by blog id", async () => {
+    const newData: {
+      title: string;
+      shortDescription: string;
+      content: string;
+      blogId?: string;
+    } = await DBDataManager.createPostInput();
+    const blogId = newData.blogId;
+    delete newData.blogId;
+
+    const res = await req
+      .post(SETTINGS.PATH.BLOGS.concat(`/${blogId}/posts`))
+      .query({ blogId })
+      .set("Content-Type", "application/json")
+      .set("authorization", DBDataManager.createPassword())
+      .send(newData);
+
+    if (res.status !== 201) {
+      console.log(res.body);
+    }
+
+    expect(res.status).toBe(201);
+    for (const key of Object.keys(newData) as (keyof PostViewModel)[]) {
+      if (key === "id") {
+        expect(typeof res.body[key]).toBe("string");
+        continue;
+      }
+      if (key === "createdAt") {
+        expect(typeof res.body[key]).toBe("string");
+        continue;
+      }
+      if (key === "blogId") {
+        expect(typeof res.body[key]).toBe("string");
+        expect(await DBDataManager.findBlogById(res.body[key])).not.toBeNull();
+        continue;
+      }
+
+      if (key === "title" || key === "shortDescription" || key === "content") {
+        expect(res.body[key]).toBe(newData[key]);
+        continue;
+      }
+
+      if (key === "blogName") {
+        expect(res.body[key]).toBe(
+          (await DBDataManager.findBlogById(blogId as string))?.name
+        );
+        continue;
+      }
+
+      throw new Error(`Unexpected key: ${key}`);
+    }
   });
 
   it("should create", async () => {

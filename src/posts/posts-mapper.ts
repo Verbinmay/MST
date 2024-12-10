@@ -1,5 +1,7 @@
 import { viewModelCreator } from "../helpers/viewModelCreator";
+import { PaginationInputModel } from "../types/PaginationInputModel.type";
 import { PostDBModel } from "../types/posts/PostDBModel.type";
+import { PostPaginationModel } from "../types/posts/PostPaginationModel.type";
 import { PostViewModel } from "../types/posts/PostViewModel.type";
 import { postsQueryRepository } from "./posts-query-repository";
 import { postsService } from "./posts-service";
@@ -31,4 +33,26 @@ export const postsMapper = {
   async deletePost(id: string): Promise<boolean> {
     return await postsService.deletePost(id);
   },
+
+  async findPostsByBlogId(
+    blogId: string,
+    pagData: PaginationInputModel
+  ){
+
+    const postsInfo: {
+      totalCount: number;
+      posts: PostDBModel[];
+    } = await postsQueryRepository.findPostsByBlogId(blogId, pagData);
+
+    const postsWithPagination: PostPaginationModel = {
+      pagesCount: Math.ceil(postsInfo.totalCount / pagData.pageSize),
+      page: pagData.pageNumber,
+      pageSize: pagData.pageSize,
+      totalCount: postsInfo.totalCount,
+      items: postsInfo.posts.map((post) =>
+        viewModelCreator.postViewModel(post)
+      ),
+    };
+    return postsWithPagination;
+  }
 };

@@ -25,7 +25,7 @@ postsRouter.post(
   postTitleValidation,
   postShortDescriptionValidation,
   postContentValidation,
-  postBlogIdValidation,
+  postBlogIdValidation("body"),
   errorValidationMiddleware,
   postPostController
 );
@@ -36,7 +36,7 @@ postsRouter.put(
   postTitleValidation,
   postShortDescriptionValidation,
   postContentValidation,
-  postBlogIdValidation,
+  postBlogIdValidation("body"),
   errorValidationMiddleware,
   putPostByIdController
 );

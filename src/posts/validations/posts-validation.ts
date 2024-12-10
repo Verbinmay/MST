@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, query, ValidationChain } from "express-validator";
 
 import { blogsRepository } from "../../blogs/blogs-repository";
 
@@ -21,7 +21,13 @@ export const postContentValidation = body("content")
   .escape()
   .isString()
   .isLength({ max: 1000 });
-export const postBlogIdValidation = body("blogId").custom(async (value) => {
-  if ((await blogsRepository.findBlogById(value)) === null)
-    throw new Error("Blog not found");
-});
+
+export const postBlogIdValidation = (
+  location: "body" | "query"
+): ValidationChain => {
+  const loc = location === "body" ? body("blogId") : query("blogId");
+  return loc.custom(async (value) => {
+    if ((await blogsRepository.findBlogById(value)) === null)
+      throw new Error("Blog not found");
+  });
+};
