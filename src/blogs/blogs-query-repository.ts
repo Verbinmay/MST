@@ -6,14 +6,9 @@ export const blogsQueryRepository = {
   async findBlogs(
     pagData: PaginationInputModel
   ): Promise<{ totalCount: number; blogs: BlogDBModel[] }> {
-    const filter: any = {
-      name: { $regex: pagData.searchNameTerm ?? "", $options: "i" },
-    };
-    if (Array.isArray(pagData.searchNameTerm)) {
-      pagData.searchNameTerm.forEach((term) => {
-        new RegExp(term, "i");
-      });
-      filter.name = { $in: pagData.searchNameTerm, $options: "i" };
+    let filter: any = {};
+    if (typeof pagData.searchNameTerm === "string") {
+      filter.name = { $regex: pagData.searchNameTerm, $options: "i" };
     }
 
     const blogs: Array<BlogDBModel> = await blogsCollection

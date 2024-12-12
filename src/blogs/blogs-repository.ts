@@ -1,20 +1,15 @@
-import { randomUUID } from "crypto";
 import { InsertOneResult, ObjectId } from "mongodb";
 
 import { blogsCollection } from "../db/db_mongo";
-import { BlogInputModel } from "../types/blogs/BlogInputModel.type";
-import { BlogViewModel } from "../types/blogs/BlogViewModel.type";
 import { BlogDBModel } from "../types/blogs/BlogDBModel.type";
+import { BlogInputModel } from "../types/blogs/BlogInputModel.type";
 
 export const blogsRepository = {
   async findBlogs(): Promise<BlogDBModel[]> {
     return await blogsCollection.find().toArray();
   },
 
-  async createBlog(
-    dto: any
-  ): Promise<InsertOneResult> {
- 
+  async createBlog(dto: any): Promise<InsertOneResult> {
     return await blogsCollection.insertOne(dto);
   },
 
