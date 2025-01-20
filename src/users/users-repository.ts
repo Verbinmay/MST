@@ -4,7 +4,7 @@ import { usersCollection } from "../db/db_mongo";
 import { UserDBModel } from "../types/users/UserDBModel.type";
 
 export const usersRepository = {
-  async createUser(dto: any): Promise<InsertOneResult> {
+  async createUser(dto: UserDBModel): Promise<InsertOneResult> {
     return await usersCollection.insertOne(dto);
   },
 

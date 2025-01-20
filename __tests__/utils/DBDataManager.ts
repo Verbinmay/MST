@@ -6,15 +6,21 @@ import {
   postsCollection,
 } from "../../src/db/db_mongo";
 
+import { faker } from "@faker-js/faker/.";
+
 import { blogsRepository } from "../../src/blogs/blogs-repository";
 import { viewModelCreator } from "../../src/helpers/viewModelCreator";
 import { postsRepository } from "../../src/posts/posts-repository";
+import { BlogDBModel } from "../../src/types/blogs/BlogDBModel.type";
 import { BlogInputModel } from "../../src/types/blogs/BlogInputModel.type";
 import { BlogViewModel } from "../../src/types/blogs/BlogViewModel.type";
+import { PostDBModel } from "../../src/types/posts/PostDBModel.type";
 import { PostInputModel } from "../../src/types/posts/PostInputModel.type";
 import { PostViewModel } from "../../src/types/posts/PostViewModel.type";
-import { BlogDBModel } from "../../src/types/blogs/BlogDBModel.type";
-import { PostDBModel } from "../../src/types/posts/PostDBModel.type";
+import { UserDBModel } from "../../src/types/users/UserDBModel.type";
+import { UserInputModel } from "../../src/types/users/UserInputModel.type";
+import { UserViewModel } from "../../src/types/users/UserViewModel.type";
+import { usersService } from "../../src/users/users-service";
 
 const chance = new Chance();
 
@@ -34,10 +40,9 @@ export const DBDataManager = {
   ): Promise<BlogDBModel[] | Array<BlogViewModel>> {
     const blogs: Array<BlogDBModel> = [];
     for (let i = 0; i < quantity; i++) {
-      const blog: InsertOneResult =
-        await blogsRepository.createBlog(
-          this.createBlogInput() as BlogViewModel
-        );
+      const blog: InsertOneResult = await blogsRepository.createBlog(
+        this.createBlogInput() as BlogViewModel
+      );
       const findBlog: BlogDBModel | null = await blogsRepository.findBlogBy_Id(
         blog.insertedId
       );
@@ -100,8 +105,7 @@ export const DBDataManager = {
     const posts: Array<PostDBModel> = [];
     for (let i = 0; i < quantity; i++) {
       const postInput: PostInputModel = await this.createPostInput(blogId);
-      const post: InsertOneResult =
-        await postsRepository.createPost(postInput);
+      const post: InsertOneResult = await postsRepository.createPost(postInput);
       const findPost: PostDBModel | null = await postsRepository.findPostBy_Id(
         post.insertedId
       );
@@ -129,5 +133,35 @@ export const DBDataManager = {
     }
 
     return post;
+  },
+
+  /** users */
+  async createUserInput(): Promise<UserInputModel> {
+    return {
+      login: faker.internet.username(),
+      email: chance.email(),
+      password: faker.internet.password(),
+    };
+  },
+
+  async createUsers(
+    quantity: number,
+    viewModel: boolean = false
+  ): Promise<Array<{ user: UserDBModel | UserViewModel; pass: string }>> {
+    const users: Array<{ user: UserDBModel | UserViewModel; pass: string }> =
+      [];
+    for (let i = 0; i < quantity; i++) {
+      const userInfo: UserInputModel = await this.createUserInput();
+
+      const user: UserDBModel | null = await usersService.createUser(userInfo);
+
+      if (user !== null) {
+        users.push({
+          user: viewModel ? viewModelCreator.userViewModel(user) : user,
+          pass: userInfo.password,
+        });
+      }
+    }
+    return users;
   },
 };

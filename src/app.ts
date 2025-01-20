@@ -2,6 +2,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import express from "express";
 
+import { authRouter } from "./routers/auth-router";
 import { blogsRouter } from "./routers/blogs-router";
 import { postsRouter } from "./routers/posts-router";
 import { testingRouter } from "./routers/testing-router";
@@ -20,3 +21,4 @@ app.use(SETTINGS.PATH.TESTING, testingRouter);
 app.use(SETTINGS.PATH.BLOGS, blogsRouter);
 app.use(SETTINGS.PATH.POSTS, postsRouter);
 app.use(SETTINGS.PATH.USERS, usersRouter);
+app.use(SETTINGS.PATH.AUTH, authRouter);
