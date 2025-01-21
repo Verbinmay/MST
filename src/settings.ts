@@ -11,6 +11,9 @@ export const SETTINGS = {
     USERS: "/users",
     AUTH: "/auth",
   },
+  MES_TYPES: {
+    EMAIL_CONFIRMATION: "emailConfirmation",
+  },
 };
 
 export const ERRORMESSAGES = {};

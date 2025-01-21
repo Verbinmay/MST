@@ -1,10 +1,22 @@
 import { Router } from "express";
 import {
+  authController,
+  getMeController,
+  registrationConfirmationController,
+  registrationController,
+} from "../auth/auth-controller";
+import {
+  codeValidation,
   loginOrEmailValidation,
   passwordValidation,
 } from "../auth/validations/auth-validation";
+import {
+  loginAndEmailUniqueValidation,
+  userEmailValidation,
+  userLoginValidation,
+  userPasswordValidation,
+} from "../users/validations/users-validation";
 
-import { authController, getMeController } from "../auth/auth-controller";
 import { errorValidationMiddleware } from "../validation/error-validation-middleware";
 import { tokenAuthorizationMiddleware } from "../validation/token-authorization-middleware";
 
@@ -19,3 +31,20 @@ authRouter.post(
 );
 
 authRouter.get("/me", tokenAuthorizationMiddleware, getMeController);
+
+authRouter.post(
+  "/registration",
+  userLoginValidation,
+  userPasswordValidation,
+  userEmailValidation,
+  errorValidationMiddleware,
+  loginAndEmailUniqueValidation,
+  registrationController
+);
+
+authRouter.post(
+  "/registration-confirmation",
+  codeValidation,
+  errorValidationMiddleware,
+  registrationConfirmationController
+);

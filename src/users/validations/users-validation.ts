@@ -16,6 +16,7 @@ export const userPasswordValidation = body("password")
   .escape()
   .isString()
   .isLength({ min: 6, max: 20 });
+
 export const userEmailValidation = body("email")
   .trim()
   .notEmpty()

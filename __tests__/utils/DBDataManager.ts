@@ -3,13 +3,16 @@ import { InsertOneResult } from "mongodb";
 import {
   blogsCollection,
   client,
+  messagesCollection,
   postsCollection,
+  usersCollection,
 } from "../../src/db/db_mongo";
 
 import { faker } from "@faker-js/faker/.";
 
 import { blogsRepository } from "../../src/blogs/blogs-repository";
 import { viewModelCreator } from "../../src/helpers/viewModelCreator";
+import { nodemailerRepository } from "../../src/mailer/nodemailer-repository";
 import { postsRepository } from "../../src/posts/posts-repository";
 import { BlogDBModel } from "../../src/types/blogs/BlogDBModel.type";
 import { BlogInputModel } from "../../src/types/blogs/BlogInputModel.type";
@@ -21,6 +24,7 @@ import { UserDBModel } from "../../src/types/users/UserDBModel.type";
 import { UserInputModel } from "../../src/types/users/UserInputModel.type";
 import { UserViewModel } from "../../src/types/users/UserViewModel.type";
 import { usersService } from "../../src/users/users-service";
+import { usersRepository } from "../../src/users/users-repository";
 
 const chance = new Chance();
 
@@ -29,6 +33,8 @@ export const DBDataManager = {
   async deleteAllDb(): Promise<void> {
     await blogsCollection.deleteMany({});
     await postsCollection.deleteMany({});
+    await usersCollection.deleteMany({});
+    await messagesCollection.deleteMany({});
   },
   async closeConnection() {
     await client.close();
@@ -138,9 +144,9 @@ export const DBDataManager = {
   /** users */
   async createUserInput(): Promise<UserInputModel> {
     return {
-      login: faker.internet.username(),
+      login: faker.internet.username().slice(0, 10),
       email: chance.email(),
-      password: faker.internet.password(),
+      password: faker.internet.password().slice(0, 20),
     };
   },
 
@@ -164,4 +170,11 @@ export const DBDataManager = {
     }
     return users;
   },
+
+  async findMessagesByUserId(userId: string) {
+    return await nodemailerRepository.findMailsByUserId(userId);
+  },
+  async findUserByEmail(email: string): Promise<UserDBModel | null> {
+    return await usersRepository.findByEmailOrLogin(email);
+  }
 };

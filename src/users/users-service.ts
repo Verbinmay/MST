@@ -18,6 +18,7 @@ export const usersService = {
       createdAt: new Date().toISOString(),
       password,
       salt,
+      isConfirmed: false,
     };
     const user: InsertOneResult = await usersRepository.createUser(userDto);
     const createdUser: UserDBModel | null = await usersRepository.findUserBy_Id(
@@ -26,12 +27,27 @@ export const usersService = {
     return createdUser;
   },
 
+  async createUserLikeAdmin(dto: UserInputModel): Promise<UserDBModel | null> {
+    const user: UserDBModel | null = await this.createUser(dto);
+    if (!user) return null;
+
+    const isConfirmed = await usersRepository.updateUser(user.id, {
+      isConfirmed: true,
+    });
+
+    if (!isConfirmed) {
+      await this.deleteUser(user.id);
+      return null;
+    }
+
+    return { ...user, isConfirmed: true };
+  },
+
   async deleteUser(id: string): Promise<boolean> {
     const isDeleted: boolean = await usersRepository.deleteUser(id);
     return isDeleted;
   },
   async compareUserInfo(dto: LoginInputModel): Promise<UserDBModel | null> {
-    console.log("dto", dto);
     const user: UserDBModel | null = await usersRepository.findByEmailOrLogin(
       dto.loginOrEmail
     );
@@ -41,7 +57,6 @@ export const usersService = {
       return null;
     }
     const pass = await bcrypt.hash(dto.password, user.salt);
-    console.log("pass", pass);
     const check: boolean = pass === user.password;
     return check ? user : null;
   },
@@ -49,4 +64,6 @@ export const usersService = {
     const user: UserDBModel | null = await usersRepository.findUserBy_Id(_id);
     return user;
   },
+
+
 };

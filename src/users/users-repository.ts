@@ -22,4 +22,14 @@ export const usersRepository = {
       $or: [{ email: data }, { login: data }],
     });
   },
+
+  async updateUser(id: string, data: Partial<UserDBModel>): Promise<boolean> {
+    const result = await usersCollection.updateOne(
+      { id },
+      {
+        $set: data,
+      }
+    );
+    return result.modifiedCount > 0;
+  },
 };

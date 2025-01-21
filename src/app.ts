@@ -13,6 +13,7 @@ export const app = express();
 app.use(bodyParser.json());
 app.use(cors()); // разрешить любым фронтам делать запросы на наш бэк
 
+
 app.get("/", (req, res) => {
   res.status(200).json({ version: "1.0" });
 });

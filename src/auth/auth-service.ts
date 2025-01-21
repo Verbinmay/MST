@@ -2,7 +2,13 @@ import { config } from "dotenv";
 import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 
+import { messageTextCreator } from "../helpers/messageTextCreator";
+import { nodemailerService } from "../mailer/nodemailer-service";
+import { SETTINGS } from "../settings";
+import { ConfirmationRegistrationInputModel } from "../types/auth/ConfimationRegistrationInputModel.type";
 import { UserDBModel } from "../types/users/UserDBModel.type";
+import { UserInputModel } from "../types/users/UserInputModel.type";
+import { usersRepository } from "../users/users-repository";
 import { usersService } from "../users/users-service";
 
 config();
@@ -33,5 +39,43 @@ export const authServices = {
     } catch (error) {
       return null;
     }
+  },
+
+  async registration(dto: UserInputModel): Promise<UserDBModel | null> {
+    const user: UserDBModel | null = await usersService.createUser(dto);
+    if (!user) return null;
+
+    const code: string = await this.createJWT(user);
+    const text: string =
+      messageTextCreator.createEmailConfirmationMessage(code);
+
+    const resultOfSending: boolean = await nodemailerService.sendMail(
+      user.email,
+      text,
+      {
+        userId: user.id,
+        type: SETTINGS.MES_TYPES.EMAIL_CONFIRMATION,
+        data: { code },
+      }
+    );
+
+    if (!resultOfSending) {
+      await usersService.deleteUser(user.id);
+      return null;
+    }
+
+    return user;
+  },
+
+  async confirmRegistration(
+    dto: ConfirmationRegistrationInputModel
+  ): Promise<boolean> {
+    const user: UserDBModel | null = await authServices.verifyJWT(dto.code);
+    if (!user) return false;
+    user.isConfirmed = true;
+    const isConfirmed = await usersRepository.updateUser(user.id, {
+      isConfirmed: true,
+    });
+    return isConfirmed;
   },
 };

@@ -26,8 +26,12 @@ export const usersMapper = {
     return usersWithPagination;
   },
 
-  async createUser(dto: UserInputModel): Promise<UserViewModel | null> {
-    const user: UserDBModel | null = await usersService.createUser(dto);
+  async createUserLikeAdmin(
+    dto: UserInputModel
+  ): Promise<UserViewModel | null> {
+    const user: UserDBModel | null = await usersService.createUserLikeAdmin(
+      dto
+    );
     return user === null ? null : viewModelCreator.userViewModel(user);
   },
 

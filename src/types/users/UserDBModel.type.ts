@@ -8,4 +8,5 @@ export type UserDBModel = {
   password: string;
   email: string;
   createdAt: string;
+  isConfirmed: boolean;
 };

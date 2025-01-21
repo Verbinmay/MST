@@ -14,7 +14,7 @@ export const getUsersController = async (req: Request, res: Response) => {
 
 export const postUserController = async (req: Request, res: Response) => {
   const data = matchedData(req);
-  const user: UserViewModel | null = await usersMapper.createUser(
+  const user: UserViewModel | null = await usersMapper.createUserLikeAdmin(
     data as UserInputModel
   );
   user ? res.status(201).json(user) : res.sendStatus(400);
