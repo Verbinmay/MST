@@ -75,7 +75,6 @@ describe("/auth", () => {
   it("should confirm registration", async () => {
     const user = await DBDataManager.createUserInput();
     user.email = process.env.MY_MAIL ?? chance.email();
-    console.log(user);
 
     const registration = await req
       .post(SETTINGS.PATH.AUTH.concat("/registration"))
@@ -100,5 +99,37 @@ describe("/auth", () => {
     const confirmedUser = await DBDataManager.findUserByEmail(user.email);
     expect(confirmedUser).not.toBeNull();
     expect(confirmedUser!.isConfirmed).toBeTruthy();
+  });
+
+  it("should refresh tokens", async () => {
+    const users = (await DBDataManager.createUsers(1)) as Array<{
+      user: UserDBModel;
+      pass: string;
+    }>;
+
+    const loginRes = await req
+      .post(SETTINGS.PATH.AUTH.concat("/login"))
+      .set("Content-Type", "application/json")
+      .send({
+        loginOrEmail: users[0].user.login,
+        password: users[0].pass,
+      })
+      .expect(200);
+
+    const cookies = loginRes.headers["set-cookie"] as unknown as string[];
+    expect(cookies).toBeDefined();
+
+    const refreshTokenCookie = cookies.find((cookie: string) =>
+      cookie.startsWith("refreshToken=")
+    );
+    expect(refreshTokenCookie).toBeDefined();
+    expect(refreshTokenCookie).toContain("HttpOnly");
+    expect(refreshTokenCookie).toContain("Secure");
+
+    const res = await req
+      .post(SETTINGS.PATH.AUTH.concat("/refresh-token"))
+      .set("Cookie", cookies)
+      .expect(200);
+    expect(res.body.accessToken).not.toBeUndefined();
   });
 });

@@ -2,6 +2,8 @@ import { Router } from "express";
 import {
   authController,
   getMeController,
+  logoutController,
+  refreshTokensController,
   registrationConfirmationController,
   registrationController,
 } from "../auth/auth-controller";
@@ -48,3 +50,7 @@ authRouter.post(
   errorValidationMiddleware,
   registrationConfirmationController
 );
+
+authRouter.post("/refresh-token", refreshTokensController);
+
+authRouter.post("/logout", logoutController);

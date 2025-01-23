@@ -1,4 +1,5 @@
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 
@@ -11,8 +12,9 @@ import { SETTINGS } from "./settings";
 
 export const app = express();
 app.use(bodyParser.json());
-app.use(cors()); // разрешить любым фронтам делать запросы на наш бэк
+app.use(cookieParser());
 
+app.use(cors()); // разрешить любым фронтам делать запросы на наш бэк
 
 app.get("/", (req, res) => {
   res.status(200).json({ version: "1.0" });
