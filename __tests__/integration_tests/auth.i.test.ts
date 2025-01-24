@@ -33,7 +33,7 @@ describe("/auth", () => {
         password: users[0].pass,
       })
       .expect(200);
-    expect(res.body.token).not.toBeUndefined();
+    expect(res.body.accessToken).not.toBeUndefined();
   });
 
   it("should return info about me", async () => {
@@ -53,7 +53,7 @@ describe("/auth", () => {
 
     const res = await req
       .get(SETTINGS.PATH.AUTH.concat("/me"))
-      .set("Authorization", `Bearer ${loginRes.body.token}`)
+      .set("Authorization", `Bearer ${loginRes.body.accessToken}`)
       .expect(200);
     expect(res.body.login).toBe(users[0].user.login);
     expect(res.body.email).toBe(users[0].user.email);

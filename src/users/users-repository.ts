@@ -23,13 +23,8 @@ export const usersRepository = {
     });
   },
 
-  async updateUser(id: string, data: Partial<UserDBModel>): Promise<boolean> {
-    const result = await usersCollection.updateOne(
-      { id },
-      {
-        $set: data,
-      }
-    );
+  async updateUser(id: string, data: UserDBModel): Promise<boolean> {
+    const result = await usersCollection.updateOne({ id }, { $set: data });
     return result.modifiedCount > 0;
   },
 };

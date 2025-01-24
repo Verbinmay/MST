@@ -32,6 +32,7 @@ export const usersService = {
     if (!user) return null;
 
     const isConfirmed = await usersRepository.updateUser(user.id, {
+      ...user,
       isConfirmed: true,
     });
 
@@ -64,6 +65,4 @@ export const usersService = {
     const user: UserDBModel | null = await usersRepository.findUserBy_Id(_id);
     return user;
   },
-
-
 };

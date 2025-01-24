@@ -1,6 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 
-import { authServices } from "../auth/auth-service";
+import { authService } from "../auth/auth-service";
+import { APIDTO } from "../types/APIDTO.type";
+import { AccessPayloadInterface } from "../types/tokens/AccessPayload.interface";
+import { UserDBModel } from "../types/users/UserDBModel.type";
 
 export const tokenAuthorizationMiddleware = async (
   req: Request,
@@ -11,9 +14,12 @@ export const tokenAuthorizationMiddleware = async (
   if (authorization) {
     const [type, token] = authorization.split(" ");
     if (type === "Bearer" && token) {
-      const user = await authServices.verifyJWT(token);
-      if (user) {
-        res.locals.user = user;
+      const resultOfVerification: APIDTO<{
+        user: UserDBModel;
+        payload: AccessPayloadInterface;
+      } | null> = await authService.verifyAccessToken(token);
+      if (!resultOfVerification.isError) {
+        res.locals.user = resultOfVerification.data?.user;
         next();
         return;
       }

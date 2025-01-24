@@ -10,6 +10,7 @@ export const SETTINGS = {
     POSTS: "/posts",
     USERS: "/users",
     AUTH: "/auth",
+    SECURITYDEV: "/security/devices",
   },
   MES_TYPES: {
     EMAIL_CONFIRMATION: "emailConfirmation",

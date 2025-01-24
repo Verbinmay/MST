@@ -2,6 +2,8 @@ import { BlogDBModel } from "../types/blogs/BlogDBModel.type";
 import { BlogViewModel } from "../types/blogs/BlogViewModel.type";
 import { PostDBModel } from "../types/posts/PostDBModel.type";
 import { PostViewModel } from "../types/posts/PostViewModel.type";
+import { SessionDBModel } from "../types/sessions/SessionDBModel.type";
+import { SessionViewModel } from "../types/sessions/SessionViewModel.type";
 import { MeViewModel } from "../types/users/MeViewModel.type";
 import { UserDBModel } from "../types/users/UserDBModel.type";
 import { UserViewModel } from "../types/users/UserViewModel.type";
@@ -28,6 +30,14 @@ export const viewModelCreator = {
       login: user.login,
       userId: user.id,
       email: user.email,
+    };
+  },
+  sessionViewModel(session: SessionDBModel): SessionViewModel {
+    return {
+      title: session.deviceName,
+      deviceId: session.deviceId,
+      ip: session.ip,
+      lastActiveDate: session.iat.toDateString(),
     };
   },
 };

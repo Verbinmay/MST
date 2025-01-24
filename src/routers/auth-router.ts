@@ -19,6 +19,7 @@ import {
   userPasswordValidation,
 } from "../users/validations/users-validation";
 
+import { countOfRequestsMiddleware } from "../validation/count-of-requests-middleware";
 import { errorValidationMiddleware } from "../validation/error-validation-middleware";
 import { tokenAuthorizationMiddleware } from "../validation/token-authorization-middleware";
 
@@ -29,6 +30,7 @@ authRouter.post(
   loginOrEmailValidation,
   passwordValidation,
   errorValidationMiddleware,
+  countOfRequestsMiddleware,
   authController
 );
 
@@ -41,6 +43,7 @@ authRouter.post(
   userEmailValidation,
   errorValidationMiddleware,
   loginAndEmailUniqueValidation,
+  countOfRequestsMiddleware,
   registrationController
 );
 
